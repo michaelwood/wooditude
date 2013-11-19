@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Wooditude (beta)</string>
+    <string name="service_name">Wooditude location sync</string>
+    <string name="menu_account">Account</string>
+    <string name="menu_manualsync">Manual sync</string>
+    <string name="username_label">Username</string>
+    <string name="password_label">Password</string>
+    <string name="account_label">Account</string>
+    <string name="settings_label">Settings</string>
+</resources>
