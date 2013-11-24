@@ -45,6 +45,7 @@ public class LocationSync extends IntentService implements
 	private final IBinder sBinder = new LocalBinder();
 	/* todo provider getter */
 	public JSONObject locations = null;
+	private Location previousLocation;
 
 	public class LocalBinder extends Binder {
 		public LocationSync getService() {
@@ -62,8 +63,8 @@ public class LocationSync extends IntentService implements
 	/** method for clients */
 	public LatLng getLatLng() {
 		if (locationClient.isConnected()) {
-			Location loc = locationClient.getLastLocation(); 
-			LatLng latLong = new LatLng(loc.getLatitude(),loc.getLongitude());
+			Location loc = locationClient.getLastLocation();
+			LatLng latLong = new LatLng(loc.getLatitude(), loc.getLongitude());
 			return latLong;
 		}
 		return null;
@@ -133,9 +134,17 @@ public class LocationSync extends IntentService implements
 	@Override
 	public void onLocationChanged(Location location) {
 		Log.i("LocSync", "location updated");
-		String sLocation = Double.toString(location.getLatitude())+","+Double.toString(location.getLongitude());
-		
+
+		/* Have we moved more than 10m from last time? */
+		if (previousLocation != null
+				&& location.distanceTo(previousLocation) < 10) {
+			Log.i(Consts.TAG, "not updating because not moved significantly");
+			return;
+		}
+		String sLocation = Double.toString(location.getLatitude()) + ","
+				+ Double.toString(location.getLongitude());
 		new HttpTransfer(this).execute(sLocation);
+		previousLocation = location;
 	}
 
 	@Override
