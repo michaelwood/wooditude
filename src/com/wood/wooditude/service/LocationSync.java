@@ -114,32 +114,14 @@ public class LocationSync extends IntentService implements
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i("locService", "starting on command");
 
-		//new HttpTransfer(this).execute();
+		// new HttpTransfer(this).execute();
 		return START_STICKY;
 	}
 
-	/**
-	 * Handle action Foo in the provided background thread with the provided
-	 * parameters.
-	 */
-	private void handleActionDownload() {
-		// TODO: Handle action Foo
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-
-	public void gotLocations (JSONObject locs) {
+	public void gotLocations(JSONObject locs) {
 		locations = locs;
-		
+
 		Log.i(Consts.TAG, "the sync task was done");
-	}
-	/**
-	 * Handle action Upload in the provided background thread with the provided
-	 * parameters.
-	 */
-	private void handleActionUpload(String latLong) {
-		// TODO: Handle action Upload
-		Log.i("UPLOAD", latLong);
-		new HttpTransfer(this).execute();
 	}
 
 	@Override
@@ -150,14 +132,6 @@ public class LocationSync extends IntentService implements
 
 	@Override
 	public void onLocationChanged(Location location) {
-		/*
-		 * currentLocation = location; LatLng latLong = new
-		 * LatLng(currentLocation.getLatitude(),
-		 * currentLocation.getLongitude()); mapMarkerMe = new
-		 * MarkerOptions().position(latLong); mMap.clear();
-		 * mMap.addMarker(mapMarkerMe);
-		 * mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLong, 8));
-		 */
 		Log.i("LocSync", "location updated");
 		String sLocation = Double.toString(location.getLatitude())+","+Double.toString(location.getLongitude());
 		
@@ -171,17 +145,6 @@ public class LocationSync extends IntentService implements
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		// TODO Auto-generated method stub
-		if (intent != null) {
-			final String action = intent.getAction();
-			if (Consts.SYNC_ACTION_DOWNLOAD.equals(action)) {
-				handleActionDownload();
-			} else if (Consts.SYNC_ACTION_UPLOAD.equals(action)) {
-				final String longLat = intent
-						.getStringExtra(Consts.EXTRA_DATA_LATLONG);
-				handleActionUpload(longLat);
-			}
-		}
 
 	}
 

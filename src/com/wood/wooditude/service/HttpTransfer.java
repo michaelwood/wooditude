@@ -199,9 +199,7 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 				e.printStackTrace();
 			}
 		} catch (IOException e) {
-			Toast toast = Toast.makeText(appContext, "DAMN IT. Couldn't talk to server",
-					Toast.LENGTH_LONG);
-			toast.show();
+			Log.i(Consts.TAG, "DAMN IT. Couldn't talk to server");
 			e.printStackTrace();
 		}
 	}
