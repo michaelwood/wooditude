@@ -29,6 +29,8 @@ import com.wood.wooditude.Consts;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Base64;
@@ -137,6 +139,14 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 	}
 
 	private void runUploadDownload(String latLong) throws MalformedURLException {
+
+		/* Check we're connected to the interwebs */
+		ConnectivityManager connMgr = (ConnectivityManager) appContext
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+		if (networkInfo == null)
+			return;
+
 		try {
 			String output = "";
 			String input = null;
