@@ -8,5 +8,8 @@
             android:key="password"
             android:title="@string/password_label" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/syncfrequency_label">
+        <ListPreference android:entries="@array/syncintervals_labels" android:entryValues="@array/syncinterval_values" android:title="@string/syncfrequency_label" android:key="syncinterval"/>
+    </PreferenceCategory>
 
 </PreferenceScreen>

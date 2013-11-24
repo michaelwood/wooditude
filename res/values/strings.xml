@@ -3,9 +3,24 @@
     <string name="app_name" translatable="false">Wooditude (beta)</string>
     <string name="service_name">Wooditude location sync</string>
     <string name="menu_account">Account</string>
-    <string name="menu_manualsync">Manual sync</string>
+    <string name="menu_manualsync">Manual Sync</string>
     <string name="username_label">Username</string>
     <string name="password_label">Password</string>
     <string name="account_label">Account</string>
     <string name="settings_label">Settings</string>
+    <string name="syncfrequency_label">Sync Frequency</string>
+    <string-array name="syncintervals_labels">
+        <item >4 Minutes</item>
+        <item >8 Minutes</item>
+        <item >16 Minutes</item>
+        <item >32 Minutes</item>
+        <item >1 Hour 4 Minutes</item>
+    </string-array>
+    <string-array name="syncinterval_values">
+        <item >240000</item>
+        <item >480000</item>
+        <item >960000</item>
+        <item >1920000</item>
+        <item >3840000</item>
+    </string-array>
 </resources>

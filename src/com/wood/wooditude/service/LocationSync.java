@@ -15,6 +15,8 @@ import com.wood.wooditude.Consts;
 import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Bundle;
@@ -22,6 +24,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -68,10 +71,31 @@ public class LocationSync extends IntentService implements
 
 	@Override
 	public void onCreate() {
+		SharedPreferences preferences = PreferenceManager
+				.getDefaultSharedPreferences(this);
+
+		String syncInterval = preferences.getString("syncinterval", null);
+		if (syncInterval != null)
+			Consts.UPDATE_INTERVAL = Integer.parseInt(preferences.getString(
+					"syncinterval", null));
+
+		preferences
+				.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
+
+					@Override
+					public void onSharedPreferenceChanged(
+							SharedPreferences sharedPreferences, String key) {
+						if (key.equals("syncinterval")) {
+							Consts.UPDATE_INTERVAL = sharedPreferences.getInt(
+									"syncinterval", Consts.UPDATE_INTERVAL);
+							locationRequester.setInterval(Consts.UPDATE_INTERVAL);
+						}
+					}
+				});
+
 		locationRequester = LocationRequest.create();
 		locationRequester.setInterval(Consts.UPDATE_INTERVAL);
-		locationRequester
-				.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+		locationRequester.setPriority(LocationRequest.PRIORITY_NO_POWER); // _BALANCED_POWER_ACCURACY);
 
 		locationClient = new LocationClient(this, this, this);
 		locationClient.connect();
