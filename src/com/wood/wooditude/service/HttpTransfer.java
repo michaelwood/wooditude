@@ -29,6 +29,7 @@ import com.wood.wooditude.Consts;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -59,35 +60,11 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 					Toast.LENGTH_LONG);
 			toast.show();
 		} else {
-		userpass = Base64.encodeToString((user + ":" + pass).getBytes(),
-				Base64.NO_WRAP);
+			userpass = Base64.encodeToString((user + ":" + pass).getBytes(),
+					Base64.NO_WRAP);
 		}
 
 		timestamp = DateFormat.getDateTimeInstance().format(new Date());
-
-		preferences
-				.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
-					@Override
-					public void onSharedPreferenceChanged(
-							SharedPreferences sharedPreferences, String key) {
-						if (key.equals("username") || key.equals("password")) {
-							user = sharedPreferences
-									.getString("username", null);
-							String pass = sharedPreferences.getString(
-									"password", "b");
-							Log.i("account details changed", user);
-							userpass = Base64.encodeToString(
-									(user + ":" + pass).getBytes(),
-									Base64.NO_WRAP);
-							try {
-								runUploadDownload(null);
-							} catch (MalformedURLException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-					}
-				});
 	}
 
 	HostnameVerifier hostnameVerifier = new HostnameVerifier() {
@@ -139,14 +116,12 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 	}
 
 	private void runUploadDownload(String latLong) throws MalformedURLException {
-
 		/* Check we're connected to the interwebs */
 		ConnectivityManager connMgr = (ConnectivityManager) appContext
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 		if (networkInfo == null)
 			return;
-
 		try {
 			String output = "";
 			String input = null;
@@ -203,7 +178,7 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 			in.close();
 			try {
 				((LocationSync) appContext)
-						.gotLocations(new JSONObject(output));
+						.httpTransferFinished(new JSONObject(output));
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -216,15 +191,6 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 
 	@Override
 	protected Void doInBackground(String... params) {
-		// int i = 0;
-		// while (true) {
-		// try {
-		// Thread.sleep(2000);
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
-		// i++;
-		// Log.i("test", "testing" + i);
 		try {
 			if (params.length > 0) {
 				String latlong = params[0];
@@ -239,7 +205,6 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 
 	@Override
 	protected void onPostExecute(Void result) {
-		// TODO Auto-generated method stub
 		super.onPostExecute(result);
 	}
 }

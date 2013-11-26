@@ -6,16 +6,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,10 +38,8 @@ public class MainActivity extends FragmentActivity {
 	public GoogleMap mMap;
 	private LocationSync locationSyncService;
 	private boolean sBound = false;
-	private Runnable mapUpdater;
-	private Runnable initialMapUpdater;
-	private Handler updateHandler = new Handler();
 	private float[] markerColours;
+	private JSONObject locations;
 
 	/** Defines callbacks for service binding, passed to bindService() */
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -51,11 +51,20 @@ public class MainActivity extends FragmentActivity {
 			LocalBinder binder = (LocalBinder) service;
 			locationSyncService = binder.getService();
 			sBound = true;
+			updateMap();
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName arg0) {
 			sBound = false;
+		}
+	};
+
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Log.i(Consts.TAG, "got message to update map receive");
+			updateMap();
 		}
 	};
 
@@ -73,7 +82,7 @@ public class MainActivity extends FragmentActivity {
 			Intent settings = new Intent(this, SettingsActivity.class);
 			startActivity(settings);
 		case R.id.manual_sync:
-			updateHandler.postDelayed(initialMapUpdater, 4000);
+			updateMap();
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -84,7 +93,6 @@ public class MainActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		setUpMapIfNeeded();
-		setUpMapUpdaterIfNeeded();
 
 		markerColours = new float[10];
 		markerColours[0] = BitmapDescriptorFactory.HUE_AZURE;
@@ -97,6 +105,8 @@ public class MainActivity extends FragmentActivity {
 		markerColours[7] = BitmapDescriptorFactory.HUE_ROSE;
 		markerColours[8] = BitmapDescriptorFactory.HUE_VIOLET;
 		markerColours[9] = BitmapDescriptorFactory.HUE_YELLOW;
+
+		updateMap();
 	}
 
 	private void updateMap() {
@@ -110,30 +120,40 @@ public class MainActivity extends FragmentActivity {
 
 		mMap.clear();
 
-		JSONObject locations = locationSyncService.locations;
+		if (latLong != null) {
+			Log.i(Consts.TAG, latLong.toString());
+			MarkerOptions mapMarkerMe = new MarkerOptions().position(latLong)
+					.title("It's You!");
+			;
+			Log.i(Consts.TAG, "Adding myself to map");
+			mMap.addMarker(mapMarkerMe);
+		}
+
+		locations = locationSyncService.getLocations();
 		if (locations == null)
 			return;
 
 		try {
-			JSONArray array = locations.getJSONArray("locations");
+			JSONArray array = locations.getJSONArray(Consts.LOCATIONS_FIELD);
 			for (int i = 0; i < array.length(); i++) {
 				MarkerOptions marker;
 				JSONObject locationEntry = array.getJSONObject(i);
-				
-				if (locationEntry.isNull("username"))
+
+				if (locationEntry.isNull(Consts.USERNAME_FIELD))
 					continue;
-				
-				String name = locationEntry.getString("username");
+
+				String name = locationEntry.getString(Consts.USERNAME_FIELD);
 				/* if user is me don't add it from the server source */
 				if (name.equals(user))
 					continue;
-				
-				
-				if (locationEntry.isNull("locationd") || locationEntry.isNull("date"))
+
+				if (locationEntry.isNull(Consts.LOCATION_FIELD)
+						|| locationEntry.isNull(Consts.DATE_FIELD))
 					continue;
-				
-				String date = locationEntry.getString("date");
-				String strLatLong[] = locationEntry.getString("locationd").split(",");
+
+				String date = locationEntry.getString(Consts.DATE_FIELD);
+				String strLatLong[] = locationEntry.getString(
+						Consts.LOCATION_FIELD).split(",");
 				Log.i(Consts.TAG, name);
 
 				LatLng latLng = new LatLng(Double.parseDouble(strLatLong[0]),
@@ -145,54 +165,12 @@ public class MainActivity extends FragmentActivity {
 						.snippet(date)
 						.icon(BitmapDescriptorFactory
 								.defaultMarker(markerColours[i % 10]));
-				
 
 				mMap.addMarker(marker);
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		Log.i(Consts.TAG, latLong.toString());
-		MarkerOptions mapMarkerMe = new MarkerOptions().position(latLong)
-				.title("It's You!");
-		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLong, 7));
-		mMap.addMarker(mapMarkerMe);
-	}
-
-	private void setUpMapUpdaterIfNeeded() {
-
-		if (initialMapUpdater == null) {
-			initialMapUpdater = new Runnable() {
-				@Override
-				public void run() {
-					Log.i(Consts.TAG, "running initial map updater");
-					android.os.Process
-							.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-					updateMap();
-				}
-			};
-		}
-		initialMapUpdater.run();
-		
-		if (mapUpdater == null) {
-
-			updateHandler.postDelayed(initialMapUpdater, 4000);
-
-			mapUpdater = new Runnable() {
-				@Override
-				public void run() {
-					Log.i(Consts.TAG, "running map updater");
-					android.os.Process
-							.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-					updateMap();
-					updateHandler.postDelayed(this, Consts.UPDATE_INTERVAL);
-				}
-			};
-		}
-		
-		updateHandler.postDelayed(mapUpdater, Consts.UPDATE_INTERVAL);
 	}
 
 	@Override
@@ -212,13 +190,26 @@ public class MainActivity extends FragmentActivity {
 			unbindService(mConnection);
 			sBound = false;
 		}
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+	}
+
+	@Override
+	protected void onPause() {
+		if (sBound) {
+			unbindService(mConnection);
+			sBound = false;
+		}
+		Log.i(Consts.TAG, "pause");
+		super.onPause();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		setUpMapIfNeeded();
-		setUpMapUpdaterIfNeeded();
+		LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
+				new IntentFilter(Consts.NOTIFICATION));
+		updateMap();
 	}
 
 	private void setUpMapIfNeeded() {
@@ -230,6 +221,7 @@ public class MainActivity extends FragmentActivity {
 		if (mMap == null) {
 			return;
 		}
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.383611, -1.466944), 6));
 		mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 		mMap.setMyLocationEnabled(true);
 	}

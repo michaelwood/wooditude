@@ -1,5 +1,7 @@
 package com.wood.wooditude.service;
 
+import java.util.prefs.PreferenceChangeListener;
+
 import org.json.JSONObject;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -24,7 +26,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.Parcel;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -43,9 +48,10 @@ public class LocationSync extends IntentService implements
 	private LocationClient locationClient;
 	private LocationRequest locationRequester;
 	private final IBinder sBinder = new LocalBinder();
-	/* todo provider getter */
-	public JSONObject locations = null;
-	private Location previousLocation;
+	private JSONObject locations = null;
+	private Location previousLocation = null;
+	private boolean clientBound = false;
+	private OnSharedPreferenceChangeListener prefChangeListener;
 
 	public class LocalBinder extends Binder {
 		public LocationSync getService() {
@@ -53,46 +59,73 @@ public class LocationSync extends IntentService implements
 			// methods
 			return LocationSync.this;
 		}
+		
+	}
+
+	@Override
+	public boolean onUnbind(Intent intent) {
+		clientBound = false;
+		Log.i(Consts.TAG, "loc sync unBound  to activit");
+		return super.onUnbind(intent);
+	}
+	
+	@Override
+	public void onRebind(Intent intent) {
+		clientBound = true;
+		Log.i(Consts.TAG, "loc sync reBound  to activit");
+		super.onRebind(intent);
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
+		clientBound = true;
+		Log.i(Consts.TAG, "loc sync Bound  to activit");
 		return sBinder;
 	}
 
-	/** method for clients */
+	/* methods for clients */
 	public LatLng getLatLng() {
-		if (locationClient.isConnected()) {
+		if (locationClient != null && locationClient.isConnected()) {
 			Location loc = locationClient.getLastLocation();
-			LatLng latLong = new LatLng(loc.getLatitude(), loc.getLongitude());
-			return latLong;
+			if (loc != null) {
+				LatLng latLong = new LatLng(loc.getLatitude(),
+						loc.getLongitude());
+				return latLong;
+			}
 		}
 		return null;
 	}
+	
+	public JSONObject getLocations () {
+		return locations;
+	}
+
 
 	@Override
 	public void onCreate() {
 		SharedPreferences preferences = PreferenceManager
 				.getDefaultSharedPreferences(this);
 
-		String syncInterval = preferences.getString("syncinterval", null);
+		String syncInterval = preferences.getString(Consts.PREF_SYNCINTERVAL, null);
 		if (syncInterval != null)
-			Consts.UPDATE_INTERVAL = Integer.parseInt(preferences.getString(
-					"syncinterval", null));
+			Consts.UPDATE_INTERVAL = Integer.parseInt(syncInterval);
 
-		preferences
-				.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
+		prefChangeListener = new OnSharedPreferenceChangeListener() {
 
-					@Override
-					public void onSharedPreferenceChanged(
-							SharedPreferences sharedPreferences, String key) {
-						if (key.equals("syncinterval")) {
-							Consts.UPDATE_INTERVAL = sharedPreferences.getInt(
-									"syncinterval", Consts.UPDATE_INTERVAL);
-							locationRequester.setInterval(Consts.UPDATE_INTERVAL);
-						}
-					}
-				});
+			@Override
+			public void onSharedPreferenceChanged(
+					SharedPreferences sharedPreferences, String key) {
+				Log.i (Consts.TAG, "pref changed "+key);
+				if (key.equals("syncinterval")) {
+					String syncInterval = sharedPreferences.getString(Consts.PREF_SYNCINTERVAL, null);
+					if (syncInterval != null) {
+						Consts.UPDATE_INTERVAL = Integer.parseInt(syncInterval);
+					Log.i(Consts.TAG, "setting syncinterval");
+					locationRequester.setInterval(Consts.UPDATE_INTERVAL);}
+				}
+			}
+		};
+		preferences.registerOnSharedPreferenceChangeListener(prefChangeListener);
 
 		locationRequester = LocationRequest.create();
 		locationRequester.setInterval(Consts.UPDATE_INTERVAL);
@@ -114,31 +147,36 @@ public class LocationSync extends IntentService implements
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i("locService", "starting on command");
+		clientBound = true;
 
 		// new HttpTransfer(this).execute();
 		return START_STICKY;
 	}
 
-	public void gotLocations(JSONObject locs) {
-		locations = locs;
-
-		Log.i(Consts.TAG, "the sync task was done");
+	public void httpTransferFinished (JSONObject locationResults) {
+		Log.i(Consts.TAG, "httpTransfer task was done");
+		locations = locationResults;
+		LocalBroadcastManager.getInstance(this).sendBroadcast (new Intent (Consts.NOTIFICATION));
 	}
 
 	@Override
 	public void onDestroy() {
 		locationClient.disconnect();
-		Log.i("locSync", "being destoryed");
+		Log.i("locSync", "being destroyed");
 	}
 
 	@Override
 	public void onLocationChanged(Location location) {
 		Log.i("LocSync", "location updated");
+		Log.i(Consts.TAG, "current interval is "+locationRequester.getInterval());
 
-		/* Have we moved more than 10m from last time? */
-		if (previousLocation != null
-				&& location.distanceTo(previousLocation) < 10) {
-			Log.i(Consts.TAG, "not updating because not moved significantly");
+		/* If we haven't moved more than 10m and the UI is not running
+		 * bound/using the service then just return.
+		 */
+		if (previousLocation != null &&
+			location.distanceTo(previousLocation) < 10 &&
+			clientBound == false) {
+			Log.i(Consts.TAG, "not updating because not moved significantly and UI is disconnected");
 			return;
 		}
 		String sLocation = Double.toString(location.getLatitude()) + ","
