@@ -15,6 +15,7 @@
         <item >16 Minutes</item>
         <item >32 Minutes</item>
         <item >1 Hour 4 Minutes</item>
+        <item >Debug 3 second</item>
     </string-array>
     <string-array name="syncinterval_values">
         <item >240000</item>
@@ -22,5 +23,6 @@
         <item >960000</item>
         <item >1920000</item>
         <item >3840000</item>
+        <item >3000</item>
     </string-array>
 </resources>
