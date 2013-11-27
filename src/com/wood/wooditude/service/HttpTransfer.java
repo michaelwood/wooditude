@@ -47,6 +47,7 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 	private String userpass;
 	private String user;
 	private String timestamp;
+	private boolean success;
 
 	public HttpTransfer(Context context) {
 		appContext = context;
@@ -178,7 +179,9 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			success = true;
 		} catch (IOException e) {
+			success = false;
 			Log.i(Consts.TAG, "DAMN IT. Couldn't talk to server");
 			e.printStackTrace();
 		}
@@ -190,16 +193,23 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 			if (params.length > 0) {
 				String latlong = params[0];
 				runUploadDownload(latlong);
-			}
+			} else
+				runUploadDownload(null);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
 		return null;
-
 	}
 
 	@Override
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
+		if (!success) {
+			Toast toast = Toast
+					.makeText(appContext,
+							"Server was not able to be contacted",
+							Toast.LENGTH_LONG);
+			toast.show();
+		}
 	}
 }
