@@ -18,7 +18,6 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -63,7 +62,7 @@ public class MainActivity extends FragmentActivity {
 	private BroadcastReceiver receiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			Log.i(Consts.TAG, "got message to update map receive");
+			Consts.log("Got request from service to update map");
 			updateMap();
 		}
 	};
@@ -121,11 +120,8 @@ public class MainActivity extends FragmentActivity {
 		mMap.clear();
 
 		if (latLong != null) {
-			Log.i(Consts.TAG, latLong.toString());
 			MarkerOptions mapMarkerMe = new MarkerOptions().position(latLong)
 					.title("It's You!");
-			;
-			Log.i(Consts.TAG, "Adding myself to map");
 			mMap.addMarker(mapMarkerMe);
 		}
 
@@ -154,7 +150,6 @@ public class MainActivity extends FragmentActivity {
 				String date = locationEntry.getString(Consts.DATE_FIELD);
 				String strLatLong[] = locationEntry.getString(
 						Consts.LOCATION_FIELD).split(",");
-				Log.i(Consts.TAG, name);
 
 				LatLng latLng = new LatLng(Double.parseDouble(strLatLong[0]),
 						Double.parseDouble(strLatLong[1]));
@@ -199,7 +194,6 @@ public class MainActivity extends FragmentActivity {
 			unbindService(mConnection);
 			sBound = false;
 		}
-		Log.i(Consts.TAG, "pause");
 		super.onPause();
 	}
 

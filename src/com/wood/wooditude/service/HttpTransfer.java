@@ -89,8 +89,6 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 			Certificate ca;
 			try {
 				ca = cf.generateCertificate(caInput);
-				System.out.println("ca="
-						+ ((X509Certificate) ca).getSubjectDN());
 			} finally {
 				caInput.close();
 			}
@@ -161,7 +159,6 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 			request.setRequestMethod("POST");
 			OutputStreamWriter post = new OutputStreamWriter(
 					request.getOutputStream());
-			//Log.i("writing to post", input);
 			post.write(input);
 			post.flush();
 
@@ -171,8 +168,6 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 			while ((inputLine = in.readLine()) != null) {
 				output += inputLine;
 			}
-
-			//Log.i(Consts.TAG, output);
 
 			post.close();
 			in.close();

@@ -1,9 +1,8 @@
 package com.wood.wooditude;
 
+import android.util.Log;
+
 public class Consts {
-
-	private Consts () {} 
-
 	public static final String SYNC_ACTION_UPLOAD = "com.wood.wooditude.action.UPLOAD";
 	public static final String SYNC_ACTION_DOWNLOAD = "com.wood.wooditude.action.DOWNLOAD";
 	public static final String EXTRA_DATA_LATLONG = "com.wood.wooditude.extra.LATLONG";
@@ -19,4 +18,9 @@ public class Consts {
 	public static final String PREF_SYNCINTERVAL = "syncinterval";
 
 	public static final String NOTIFICATION = "com.wood.wooditude.service.notify";
+
+	private static final boolean debugEnabled = true;
+	
+	private Consts () {} 
+	public static void log (String in) { if (debugEnabled) { Log.i(Consts.TAG, in); } }
 }
