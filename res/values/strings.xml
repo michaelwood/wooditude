@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Wooditude (beta)</string>
+    <string name="app_name" translatable="false">Wooditude</string>
     <string name="service_name">Wooditude location sync</string>
     <string name="menu_account">Account</string>
     <string name="menu_manualsync">Manual Sync</string>
