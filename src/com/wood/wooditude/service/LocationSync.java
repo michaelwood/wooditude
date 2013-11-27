@@ -1,7 +1,5 @@
 package com.wood.wooditude.service;
 
-import java.util.prefs.PreferenceChangeListener;
-
 import org.json.JSONObject;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -9,29 +7,19 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.wood.wooditude.Consts;
 
 import android.app.IntentService;
-import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.Parcel;
-import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-import android.widget.Toast;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -55,8 +43,6 @@ public class LocationSync extends IntentService implements
 
 	public class LocalBinder extends Binder {
 		public LocationSync getService() {
-			// Return this instance of LocalService so clients can call public
-			// methods
 			return LocationSync.this;
 		}
 	}

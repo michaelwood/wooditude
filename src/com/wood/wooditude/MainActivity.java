@@ -219,7 +219,8 @@ public class MainActivity extends FragmentActivity {
 		if (mMap == null) {
 			return;
 		}
-		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.383611, -1.466944), 6));
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.383611,
+				-1.466944), 6));
 		mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 		mMap.setMyLocationEnabled(true);
 	}
