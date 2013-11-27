@@ -135,6 +135,7 @@ public class MainActivity extends FragmentActivity {
 			JSONArray array = locations.getJSONArray(Consts.LOCATIONS_FIELD);
 			for (int i = 0; i < array.length(); i++) {
 				MarkerOptions marker;
+				LatLng latLng;
 				JSONObject locationEntry = array.getJSONObject(i);
 
 				if (locationEntry.isNull(Consts.USERNAME_FIELD))
@@ -150,11 +151,15 @@ public class MainActivity extends FragmentActivity {
 					continue;
 
 				String date = locationEntry.getString(Consts.DATE_FIELD);
+				
+				if (!locationEntry.getString(Consts.LOCATION_FIELD).contains(","))
+					continue;
+
 				String strLatLong[] = locationEntry.getString(
 						Consts.LOCATION_FIELD).split(",");
 
-				LatLng latLng = new LatLng(Double.parseDouble(strLatLong[0]),
-						Double.parseDouble(strLatLong[1]));
+				latLng = new LatLng(Double.parseDouble(strLatLong[0]),
+							Double.parseDouble(strLatLong[1]));
 
 				marker = new MarkerOptions()
 						.position(latLng)
