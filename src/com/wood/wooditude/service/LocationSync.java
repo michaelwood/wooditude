@@ -59,28 +59,6 @@ public class LocationSync extends IntentService implements
 			// methods
 			return LocationSync.this;
 		}
-		
-	}
-
-	@Override
-	public boolean onUnbind(Intent intent) {
-		clientBound = false;
-		Log.i(Consts.TAG, "loc sync unBound  to activit");
-		return super.onUnbind(intent);
-	}
-	
-	@Override
-	public void onRebind(Intent intent) {
-		clientBound = true;
-		Log.i(Consts.TAG, "loc sync reBound  to activit");
-		super.onRebind(intent);
-	}
-
-	@Override
-	public IBinder onBind(Intent intent) {
-		clientBound = true;
-		Log.i(Consts.TAG, "loc sync Bound  to activit");
-		return sBinder;
 	}
 
 	/* methods for clients */
@@ -95,11 +73,62 @@ public class LocationSync extends IntentService implements
 		}
 		return null;
 	}
-	
-	public JSONObject getLocations () {
+
+	public JSONObject getLocations() {
 		return locations;
 	}
 
+	/* we know we only have one client ever so no need to keep count */
+	public void byebye() {
+		clientBound = false;
+	}
+
+	public void hello() {
+		clientBound = true;
+	}
+
+	public void manualUpdate() {
+		Location location = null;
+		String sLocation = null;
+
+		/* Get last from the client */
+		if (locationClient != null && locationClient.isConnected())
+			location = locationClient.getLastLocation();
+
+		/* That failed so try our previousLocation */
+		if (location == null && previousLocation != null)
+			location = previousLocation;
+
+		if (location != null)
+			sLocation = Double.toString(location.getLatitude()) + ","
+					+ Double.toString(location.getLongitude());
+
+		/* We might not have got a location but that's OK
+		 * passing a null value will just result in a download only
+		 */
+		new HttpTransfer(this).execute(sLocation);
+	}
+
+	@Override
+	public boolean onUnbind(Intent intent) {
+		clientBound = false;
+		Consts.log("loc sync unBound  to activit");
+		return super.onUnbind(intent);
+	}
+
+	@Override
+	public void onRebind(Intent intent) {
+		clientBound = true;
+		Consts.log("loc sync reBound  to activit");
+		super.onRebind(intent);
+	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		clientBound = true;
+		Consts.log("loc sync Bound  to activit");
+		return sBinder;
+	}
 
 	@Override
 	public void onCreate() {

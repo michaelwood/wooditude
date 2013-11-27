@@ -49,8 +49,9 @@ public class MainActivity extends FragmentActivity {
 			// LocalService instance
 			LocalBinder binder = (LocalBinder) service;
 			locationSyncService = binder.getService();
+			locationSyncService.hello();
 			sBound = true;
-			updateMap();
+			locationSyncService.manualUpdate();
 		}
 
 		@Override
@@ -81,7 +82,8 @@ public class MainActivity extends FragmentActivity {
 			Intent settings = new Intent(this, SettingsActivity.class);
 			startActivity(settings);
 		case R.id.manual_sync:
-			updateMap();
+			if (sBound)
+				locationSyncService.manualUpdate();
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -182,6 +184,7 @@ public class MainActivity extends FragmentActivity {
 		super.onStop();
 
 		if (sBound) {
+			locationSyncService.byebye();
 			unbindService(mConnection);
 			sBound = false;
 		}
@@ -191,6 +194,7 @@ public class MainActivity extends FragmentActivity {
 	@Override
 	protected void onPause() {
 		if (sBound) {
+			locationSyncService.byebye();
 			unbindService(mConnection);
 			sBound = false;
 		}
