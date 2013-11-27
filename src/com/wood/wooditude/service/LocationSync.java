@@ -121,30 +121,44 @@ public class LocationSync extends IntentService implements
 		SharedPreferences preferences = PreferenceManager
 				.getDefaultSharedPreferences(this);
 
-		String syncInterval = preferences.getString(Consts.PREF_SYNCINTERVAL, null);
+		String syncInterval = preferences.getString(Consts.PREF_SYNCINTERVAL,
+				null);
 		if (syncInterval != null)
 			Consts.UPDATE_INTERVAL = Integer.parseInt(syncInterval);
 
+		final LocationSync context = this;
 		prefChangeListener = new OnSharedPreferenceChangeListener() {
 
 			@Override
 			public void onSharedPreferenceChanged(
 					SharedPreferences sharedPreferences, String key) {
-				Log.i (Consts.TAG, "pref changed "+key);
 				if (key.equals("syncinterval")) {
-					String syncInterval = sharedPreferences.getString(Consts.PREF_SYNCINTERVAL, null);
+					String syncInterval = sharedPreferences.getString(
+							Consts.PREF_SYNCINTERVAL, null);
 					if (syncInterval != null) {
 						Consts.UPDATE_INTERVAL = Integer.parseInt(syncInterval);
-					Log.i(Consts.TAG, "setting syncinterval");
-					locationRequester.setInterval(Consts.UPDATE_INTERVAL);}
+						Consts.log("onChanged Setting update interval to:"
+								+ Consts.UPDATE_INTERVAL);
+						context.locationRequester = LocationRequest.create();
+						context.locationRequester
+								.setInterval(Consts.UPDATE_INTERVAL);
+						context.locationRequester
+								.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+						context.locationClient.requestLocationUpdates(
+								locationRequester, context);
+					}
 				}
 			}
 		};
-		preferences.registerOnSharedPreferenceChangeListener(prefChangeListener);
+		preferences
+				.registerOnSharedPreferenceChangeListener(prefChangeListener);
 
 		locationRequester = LocationRequest.create();
+		Consts.log("onCreate sSetting update interval to:"
+				+ Consts.UPDATE_INTERVAL);
 		locationRequester.setInterval(Consts.UPDATE_INTERVAL);
-		locationRequester.setPriority(LocationRequest.PRIORITY_NO_POWER); // _BALANCED_POWER_ACCURACY);
+		locationRequester
+				.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
 		locationClient = new LocationClient(this, this, this);
 		locationClient.connect();
@@ -161,39 +175,36 @@ public class LocationSync extends IntentService implements
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.i("locService", "starting on command");
-		clientBound = true;
-
-		// new HttpTransfer(this).execute();
 		return START_STICKY;
 	}
 
-	public void httpTransferFinished (JSONObject locationResults) {
-		Log.i(Consts.TAG, "httpTransfer task was done");
+	public void httpTransferFinished(JSONObject locationResults) {
 		locations = locationResults;
-		LocalBroadcastManager.getInstance(this).sendBroadcast (new Intent (Consts.NOTIFICATION));
+		Consts.log("httpTransferFinished broadcasting...");
+		LocalBroadcastManager.getInstance(this).sendBroadcast(
+				new Intent(Consts.NOTIFICATION));
 	}
 
 	@Override
 	public void onDestroy() {
+		Consts.log("Service destroyed");
 		locationClient.disconnect();
-		Log.i("locSync", "being destroyed");
 	}
 
 	@Override
 	public void onLocationChanged(Location location) {
-		Log.i("LocSync", "location updated");
-		Log.i(Consts.TAG, "current interval is "+locationRequester.getInterval());
-
-		/* If we haven't moved more than 10m and the UI is not running
+		/*
+		 * If we haven't moved more than 10m and the UI is not running
 		 * bound/using the service then just return.
 		 */
-		if (previousLocation != null &&
-			location.distanceTo(previousLocation) < 10 &&
-			clientBound == false) {
-			Log.i(Consts.TAG, "not updating because not moved significantly and UI is disconnected");
+		Consts.log("clientBound ==" + clientBound);
+		if (previousLocation != null
+				&& location.distanceTo(previousLocation) < 10
+				&& clientBound == false) {
+			Consts.log("Not updating because not moved significantly and UI is disconnected");
 			return;
 		}
+		Consts.log("Location changed running HttpTransfer");
 		String sLocation = Double.toString(location.getLatitude()) + ","
 				+ Double.toString(location.getLongitude());
 		new HttpTransfer(this).execute(sLocation);
