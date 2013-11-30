@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ -z $1 ]; then
+  echo "You must specify file input"
+  exit
+fi
+
 PX=36
 inkscape $1 -C --export-png=./res/drawable-ldpi/ic_launcher.png -y 0 --export-width=$PX --export-height=$PX
 
