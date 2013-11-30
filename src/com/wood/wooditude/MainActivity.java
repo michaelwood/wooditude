@@ -1,5 +1,6 @@
 package com.wood.wooditude;
 
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.json.JSONArray;
@@ -13,14 +14,22 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -39,6 +48,10 @@ public class MainActivity extends FragmentActivity {
 	private boolean sBound = false;
 	private float[] markerColours;
 	private JSONObject locations;
+	private String[] people;
+	private DrawerLayout mDrawerLayout;
+	private ListView mDrawerList;
+	private ActionBarDrawerToggle mDrawerToggle;
 
 	/** Defines callbacks for service binding, passed to bindService() */
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -69,6 +82,20 @@ public class MainActivity extends FragmentActivity {
 	};
 
 	@Override
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+		// Sync the toggle state after onRestoreInstanceState has occurred.
+		mDrawerToggle.syncState();
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		// Pass any configuration change to the drawer toggls
+		mDrawerToggle.onConfigurationChanged(newConfig);
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.option_menu, menu);
@@ -77,13 +104,21 @@ public class MainActivity extends FragmentActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		if (mDrawerToggle.onOptionsItemSelected(item)) {
+			return true;
+		}
 		switch (item.getItemId()) {
+
 		case R.id.settings:
 			Intent settings = new Intent(this, SettingsActivity.class);
 			startActivity(settings);
+			return true;
 		case R.id.manual_sync:
-			if (sBound)
+			if (sBound) {
 				locationSyncService.manualUpdate();
+				return true;
+			}
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -107,7 +142,89 @@ public class MainActivity extends FragmentActivity {
 		markerColours[8] = BitmapDescriptorFactory.HUE_VIOLET;
 		markerColours[9] = BitmapDescriptorFactory.HUE_YELLOW;
 
-		updateMap();
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+		mDrawerLayout.setFocusableInTouchMode(true);
+		mDrawerLayout.setFocusable(true);
+
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+		// enable ActionBar app icon to behave as action to toggle nav drawer
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+
+		// ActionBarDrawerToggle ties together the the proper interactions
+		// between the sliding drawer and the action bar app icon
+		mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
+		mDrawerLayout, /* DrawerLayout object */
+		R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
+		R.string.app_name, /* "open drawer" description for accessibility */
+		R.string.app_name /* "close drawer" description for accessibility */
+		) {
+			public void onDrawerClosed(View view) {
+				invalidateOptionsMenu(); // creates call to
+											// onPrepareOptionsMenu()
+			}
+
+			public void onDrawerOpened(View drawerView) {
+				invalidateOptionsMenu(); // creates call to
+											// onPrepareOptionsMenu()
+			}
+		};
+		mDrawerLayout.setDrawerListener(mDrawerToggle);
+	}
+
+	private void zoomToPerson(String person) throws JSONException {
+		if (locations == null)
+			return;
+
+		JSONArray array = locations.getJSONArray(Consts.LOCATIONS_FIELD);
+
+		for (int i=0; i < array.length(); i++) {
+			JSONObject locationEntry = array.getJSONObject(i);
+			if (locationEntry.isNull(Consts.USERNAME_FIELD))
+				continue;
+
+			String name = locationEntry.getString(Consts.USERNAME_FIELD);
+
+			if (name.equals(person.toLowerCase(Locale.getDefault()))) {
+				if (!locationEntry.isNull(Consts.LOCATION_FIELD)) {
+					LatLng latLng = latLngFromString(locationEntry.getString(Consts.LOCATION_FIELD));
+					mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
+				}
+			}
+		}
+	}
+
+	private LatLng latLngFromString (String stringLatLng) {
+		LatLng latLng;
+		if (!stringLatLng.contains(","))
+			return new LatLng (0,0);
+
+		String strLatLong[] = stringLatLng.split(",");
+		latLng = new LatLng(Double.parseDouble(strLatLong[0]),
+				Double.parseDouble(strLatLong[1]));
+		return latLng;
+	}
+
+	/* The click ListTer for ListView in the navigation drawer */
+	private class DrawerItemClickListener implements
+			ListView.OnItemClickListener {
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
+			if (view instanceof TextView) {
+				try {
+					zoomToPerson ((String) ((TextView) view).getText());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+			mDrawerLayout.closeDrawers();
+		}
 	}
 
 	private void updateMap() {
@@ -133,6 +250,12 @@ public class MainActivity extends FragmentActivity {
 
 		try {
 			JSONArray array = locations.getJSONArray(Consts.LOCATIONS_FIELD);
+			/*
+			 * W could use a hashmap/SimplerAdapater but I don't see any point
+			 * yet
+			 */
+			people = new String[array.length()];
+
 			for (int i = 0; i < array.length(); i++) {
 				MarkerOptions marker;
 				LatLng latLng;
@@ -142,6 +265,13 @@ public class MainActivity extends FragmentActivity {
 					continue;
 
 				String name = locationEntry.getString(Consts.USERNAME_FIELD);
+				/*
+				 * Copy user names into a standard string array for drawer list
+				 * also make names with capitals
+				 */
+				people[i] = name.substring(0, 1).toUpperCase(
+						Locale.getDefault())
+						+ name.substring(1);
 				/* if user is me don't add it from the server source */
 				if (name.equals(user))
 					continue;
@@ -151,25 +281,26 @@ public class MainActivity extends FragmentActivity {
 					continue;
 
 				String date = locationEntry.getString(Consts.DATE_FIELD);
-				
-				if (!locationEntry.getString(Consts.LOCATION_FIELD).contains(","))
+
+				if (!locationEntry.getString(Consts.LOCATION_FIELD).contains(
+						","))
 					continue;
 
-				String strLatLong[] = locationEntry.getString(
-						Consts.LOCATION_FIELD).split(",");
-
-				latLng = new LatLng(Double.parseDouble(strLatLong[0]),
-							Double.parseDouble(strLatLong[1]));
+				latLng = latLngFromString(locationEntry.getString(Consts.LOCATION_FIELD));
 
 				marker = new MarkerOptions()
 						.position(latLng)
-						.title(name)
+						.title(people[i])
 						.snippet(date)
 						.icon(BitmapDescriptorFactory
 								.defaultMarker(markerColours[i % 10]));
 
 				mMap.addMarker(marker);
 			}
+
+			mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+					R.layout.drawer_list_item, people));
+
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
