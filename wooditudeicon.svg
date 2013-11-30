@@ -20,6 +20,10 @@
      id="defs4101">
     <inkscape:path-effect
        effect="spiro"
+       id="path-effect3047"
+       is_visible="true" />
+    <inkscape:path-effect
+       effect="spiro"
        id="path-effect7603"
        is_visible="true" />
     <inkscape:path-effect
@@ -302,9 +306,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="218.95217"
-     inkscape:cy="231.06427"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="266.40187"
+     inkscape:cy="-60.372284"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -332,7 +336,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -352,14 +356,14 @@
        ry="35" />
     <path
        style="fill:none;stroke:#ffffff;stroke-width:30;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 78.791899,933.16418 77.781741,-50.50763 112.12693,48.48732 110.10663,-27.27411 61.6193,52.52793"
+       d="m 64.144685,985.69211 92.428955,-103.03556 112.12693,48.48732 110.10663,-27.27411 59.13404,80.0133 -373.796555,1.80905"
        id="path7597"
        inkscape:path-effect="#path-effect7599"
-       inkscape:original-d="m 78.791899,933.16418 77.781741,-50.50763 c 38.3858,22.89679 -69.51853,9.67279 112.12693,48.48732 38.72252,-11.44839 55.63053,39.31186 110.10663,-27.27411 l 61.6193,52.52793"
+       inkscape:original-d="M 64.144685,985.69211 156.57364,882.65655 c 38.3858,22.89679 -69.51853,9.67279 112.12693,48.48732 38.72252,-11.44839 55.63053,39.31186 110.10663,-27.27411 l 59.13404,80.0133 z"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccc" />
+       sodipodi:nodetypes="cccccc" />
     <path
-       style="fill:#fff7f7;fill-opacity:1;stroke:none"
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
        d="m 226.68503,592.40539 104.9286,181.2496 47.56781,-27.3032 -19.32973,139.79136 -138.10598,-49.0559 41.02536,-23.686 -104.90786,-181.26158 68.8218,-39.73428"
        id="path7601"
        inkscape:path-effect="#path-effect7603"
