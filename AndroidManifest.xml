@@ -75,11 +75,6 @@
             </intent-filter>
         </receiver>
 
-        <service
-            android:name="com.wood.wooditude.MyIntentService"
-            android:exported="false" >
-        </service>
-
         <activity
             android:name="com.wood.wooditude.SettingsActivity"
             android:label="@string/title_activity_settings" >
