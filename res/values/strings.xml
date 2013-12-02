@@ -9,6 +9,8 @@
     <string name="account_label">Account</string>
     <string name="settings_label">Settings</string>
     <string name="syncfrequency_label">Sync Frequency</string>
+    <string name="about_label">About</string>
+    <string name="version_label">Version:</string>
     <string-array name="syncintervals_labels">
         <item >4 Minutes</item>
         <item >8 Minutes</item>

@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -14,6 +15,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -116,9 +118,18 @@ public class MainActivity extends FragmentActivity {
 		case R.id.manual_sync:
 			if (sBound) {
 				locationSyncService.manualUpdate();
-				return true;
+		case R.id.about:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle (R.string.about_label);
+			String version = "";
+			try {
+				version = this.getPackageManager().getPackageInfo("com.wood.wooditude", 0).versionName;
+			} catch (NameNotFoundException e) {
+				e.printStackTrace();
 			}
 
+			builder.setMessage(getString(R.string.app_name) +" "+ getString (R.string.version_label) +" "+ version);
+			builder.show();
 		default:
 			return super.onOptionsItemSelected(item);
 		}
