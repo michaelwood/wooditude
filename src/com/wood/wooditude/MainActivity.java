@@ -54,6 +54,7 @@ public class MainActivity extends FragmentActivity {
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
 	private ActionBarDrawerToggle mDrawerToggle;
+	private MenuItem manualSyncItem;
 
 	/** Defines callbacks for service binding, passed to bindService() */
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -66,6 +67,7 @@ public class MainActivity extends FragmentActivity {
 			locationSyncService = binder.getService();
 			locationSyncService.hello();
 			sBound = true;
+			runSpinner(true);
 			locationSyncService.manualUpdate();
 		}
 
@@ -80,6 +82,7 @@ public class MainActivity extends FragmentActivity {
 		public void onReceive(Context context, Intent intent) {
 			Consts.log("Got request from service to update map");
 			updateMap();
+			runSpinner(false);
 		}
 	};
 
@@ -101,6 +104,9 @@ public class MainActivity extends FragmentActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.option_menu, menu);
+
+		inflater.inflate(R.menu.actionbar_menu, menu);
+		manualSyncItem = menu.findItem(R.id.manual_sync);
 		return true;
 	}
 
@@ -117,7 +123,13 @@ public class MainActivity extends FragmentActivity {
 			return true;
 		case R.id.manual_sync:
 			if (sBound) {
+				Consts.log("Start manual sync");
+				runSpinner (true);
 				locationSyncService.manualUpdate();
+			} else {
+				runSpinner(true);
+			}
+			return true;
 		case R.id.about:
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle (R.string.about_label);
@@ -188,6 +200,15 @@ public class MainActivity extends FragmentActivity {
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 	}
 
+	private void runSpinner (boolean start) {
+		if (manualSyncItem != null) {
+			if (start)
+				manualSyncItem.setActionView(R.layout.actionbar_spinner);
+			else
+				manualSyncItem.setActionView(null);
+		}
+	}
+
 	private void zoomToPerson(String person) throws JSONException {
 		if (locations == null)
 			return;
@@ -235,6 +256,8 @@ public class MainActivity extends FragmentActivity {
 				}
 			}
 			mDrawerLayout.closeDrawers();
+			mDrawerList.clearChoices();
+			mDrawerList.requestLayout();
 		}
 	}
 
@@ -262,8 +285,8 @@ public class MainActivity extends FragmentActivity {
 		try {
 			JSONArray array = locations.getJSONArray(Consts.LOCATIONS_FIELD);
 			/*
-			 * W could use a hashmap/SimplerAdapater but I don't see any point
-			 * yet
+			 * We could use a hashmap/SimplerAdapater but I don't see any point
+			 * yet. Make a string array for the ListView.
 			 */
 			people = new String[array.length()];
 
@@ -304,7 +327,7 @@ public class MainActivity extends FragmentActivity {
 						.title(people[i])
 						.snippet(date)
 						.icon(BitmapDescriptorFactory
-								.defaultMarker(markerColours[i % 10]));
+						.defaultMarker(markerColours[i % 10]));
 
 				mMap.addMarker(marker);
 			}
