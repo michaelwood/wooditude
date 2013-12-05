@@ -1,7 +1,10 @@
 package com.wood.wooditude;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,6 +27,7 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
+import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -293,12 +297,14 @@ public class MainActivity extends FragmentActivity {
 			for (int i = 0; i < array.length(); i++) {
 				MarkerOptions marker;
 				LatLng latLng;
+				String name,date,dateDiff;
+				SimpleDateFormat dateFormat;
 				JSONObject locationEntry = array.getJSONObject(i);
 
 				if (locationEntry.isNull(Consts.USERNAME_FIELD))
 					continue;
 
-				String name = locationEntry.getString(Consts.USERNAME_FIELD);
+				name = locationEntry.getString(Consts.USERNAME_FIELD);
 				/*
 				 * Copy user names into a standard string array for drawer list
 				 * also make names with capitals
@@ -314,7 +320,16 @@ public class MainActivity extends FragmentActivity {
 						|| locationEntry.isNull(Consts.DATE_FIELD))
 					continue;
 
-				String date = locationEntry.getString(Consts.DATE_FIELD);
+				date = locationEntry.getString(Consts.DATE_FIELD);
+				dateFormat = new SimpleDateFormat ("dd MMM yyyy hh:mm:ss", Locale.getDefault());
+				try {
+					Date personDate = dateFormat.parse(date);
+					dateDiff = (String) DateUtils.getRelativeTimeSpanString(personDate.getTime(), new Date().getTime (), 1000);
+				} catch (ParseException e) {
+					e.printStackTrace();
+					dateDiff = date;
+				}
+
 
 				if (!locationEntry.getString(Consts.LOCATION_FIELD).contains(
 						","))
@@ -325,7 +340,7 @@ public class MainActivity extends FragmentActivity {
 				marker = new MarkerOptions()
 						.position(latLng)
 						.title(people[i])
-						.snippet(date)
+						.snippet(dateDiff)
 						.icon(BitmapDescriptorFactory
 						.defaultMarker(markerColours[i % 10]));
 
