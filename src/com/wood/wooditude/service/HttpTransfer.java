@@ -2,7 +2,6 @@ package com.wood.wooditude.service;
 
 import java.io.BufferedReader;
 import java.security.KeyStore;
-import java.security.cert.X509Certificate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,8 +27,6 @@ import com.wood.wooditude.Consts;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
