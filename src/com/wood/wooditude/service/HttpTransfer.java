@@ -54,7 +54,7 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 		user = preferences.getString("username", null);
 		String pass = preferences.getString("password", "b");
 		if (user == null) {
-			Toast toast = Toast.makeText(context,"Please configure username and password",Toast.LENGTH_LONG);
+			Toast toast = Toast.makeText(context,"Wooditude: Please configure username and password",Toast.LENGTH_LONG);
 			toast.show();
 		} else {
 			userpass = Base64.encodeToString((user + ":" + pass).getBytes(),
@@ -201,7 +201,7 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
 		if (!success) {
-			Toast toast = Toast.makeText(appContext, "Server was not able to be contacted", Toast.LENGTH_LONG);
+			Toast toast = Toast.makeText(appContext, "Wooditude: Server was not able to be contacted", Toast.LENGTH_LONG);
 			toast.show();
 		}
 	}
