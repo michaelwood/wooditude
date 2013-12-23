@@ -18,9 +18,10 @@ public class Consts {
 	public static final String PREF_SYNCINTERVAL = "syncinterval";
 
 	public static final String NOTIFICATION = "com.wood.wooditude.service.notify";
+	public static final String SERVICE_INTENT_FILTER = "com.wood.wooditude.service";
 
 	private static final boolean debugEnabled = true;
-	
+
 	private Consts () {} 
 	public static void log (String in) { if (debugEnabled) { Log.i(Consts.TAG, in); } }
 }

@@ -10,8 +10,13 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.model.LatLng;
 import com.wood.wooditude.Consts;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.location.Location;
@@ -40,6 +45,7 @@ public class LocationSync extends IntentService implements
 	private Location previousLocation = null;
 	private boolean clientBound = false;
 	private OnSharedPreferenceChangeListener prefChangeListener;
+	private BroadcastReceiver receiver;
 
 	public class LocalBinder extends Binder {
 		public LocationSync getService() {
@@ -162,6 +168,14 @@ public class LocationSync extends IntentService implements
 
 		locationClient = new LocationClient(this, this, this);
 		locationClient.connect();
+
+		/* Re-use the boot-receiver that starts the service on reboot to start the service in the case
+		 * where the service might have died
+		 */
+		AlarmManager am = (AlarmManager) (this.getSystemService(Context.ALARM_SERVICE));
+		Intent intent = new Intent(Consts.SERVICE_INTENT_FILTER).setClass(this, BootReceiver.class);
+		PendingIntent activateServiceIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+		am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR , activateServiceIntent);
 	}
 
 	@Override
