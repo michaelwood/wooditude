@@ -216,6 +216,10 @@ public class LocationSync extends IntentService implements
 		previousLocation = location;
 	}
 
+	public boolean getClientBound () {
+		return this.clientBound;
+	}
+
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {
 		/* really don't care but have to implement method */

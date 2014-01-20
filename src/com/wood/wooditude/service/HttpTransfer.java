@@ -200,7 +200,9 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 	@Override
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
-		if (!success) {
+		boolean clientBound = ((LocationSync) appContext).getClientBound();
+
+		if (!success && clientBound) {
 			Toast toast = Toast.makeText(appContext, "Wooditude: Server was not able to be contacted", Toast.LENGTH_LONG);
 			toast.show();
 		}
