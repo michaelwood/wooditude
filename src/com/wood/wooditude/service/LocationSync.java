@@ -2,21 +2,11 @@ package com.wood.wooditude.service;
 
 import org.json.JSONObject;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
-import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.model.LatLng;
-import com.wood.wooditude.Consts;
-
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.location.Location;
@@ -26,13 +16,15 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 
-/**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p>
- * TODO: Customize class - update intent actions, extra parameters and static
- * helper methods.
- */
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.maps.model.LatLng;
+import com.wood.wooditude.Consts;
+
+
 public class LocationSync extends IntentService implements
 		GooglePlayServicesClient.ConnectionCallbacks,
 		com.google.android.gms.location.LocationListener,
@@ -45,7 +37,6 @@ public class LocationSync extends IntentService implements
 	private Location previousLocation = null;
 	private boolean clientBound = false;
 	private OnSharedPreferenceChangeListener prefChangeListener;
-	private BroadcastReceiver receiver;
 
 	public class LocalBinder extends Binder {
 		public LocationSync getService() {
@@ -232,12 +223,10 @@ public class LocationSync extends IntentService implements
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-
 	}
 
 	@Override
 	public void onDisconnected() {
 		// TODO Auto-generated method stub
-
 	}
 }

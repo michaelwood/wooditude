@@ -2,9 +2,11 @@ package com.wood.wooditude;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +37,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -43,7 +44,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.wood.wooditude.R;
 import com.wood.wooditude.service.LocationSync;
 import com.wood.wooditude.service.LocationSync.LocalBinder;
 
@@ -54,11 +54,12 @@ public class MainActivity extends FragmentActivity {
 	private boolean sBound = false;
 	private float[] markerColours;
 	private JSONObject locations;
-	private String[] people;
+	private List<Person> people;
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
 	private ActionBarDrawerToggle mDrawerToggle;
 	private MenuItem manualSyncItem;
+	private ArrayAdapter<Person> mDrawerListAdapter;
 
 	/** Defines callbacks for service binding, passed to bindService() */
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -202,6 +203,9 @@ public class MainActivity extends FragmentActivity {
 			}
 		};
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
+		people = new ArrayList<Person>();
+		mDrawerListAdapter = new PersonListAdapater(this, R.id.draweritem, people);
+		mDrawerList.setAdapter(mDrawerListAdapter);
 	}
 
 	private void runSpinner (boolean start) {
@@ -213,25 +217,10 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 
-	private void zoomToPerson(String person) throws JSONException {
-		if (locations == null)
-			return;
-
-		JSONArray array = locations.getJSONArray(Consts.LOCATIONS_FIELD);
-
-		for (int i=0; i < array.length(); i++) {
-			JSONObject locationEntry = array.getJSONObject(i);
-			if (locationEntry.isNull(Consts.USERNAME_FIELD))
-				continue;
-
-			String name = locationEntry.getString(Consts.USERNAME_FIELD);
-
-			if (name.equals(person.toLowerCase(Locale.getDefault()))) {
-				if (!locationEntry.isNull(Consts.LOCATION_FIELD)) {
-					LatLng latLng = latLngFromString(locationEntry.getString(Consts.LOCATION_FIELD));
-					mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
-				}
-			}
+	private void zoomToPerson(Person person) {
+		LatLng latLng = person.getLocation();
+		if (latLng != null) {
+			mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
 		}
 	}
 
@@ -246,19 +235,12 @@ public class MainActivity extends FragmentActivity {
 		return latLng;
 	}
 
-	/* The click ListTer for ListView in the navigation drawer */
 	private class DrawerItemClickListener implements
 			ListView.OnItemClickListener {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			if (view instanceof TextView) {
-				try {
-					zoomToPerson ((String) ((TextView) view).getText());
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-			}
+			zoomToPerson(people.get(position));
 			mDrawerLayout.closeDrawers();
 			mDrawerList.clearChoices();
 			mDrawerList.requestLayout();
@@ -286,18 +268,15 @@ public class MainActivity extends FragmentActivity {
 		if (locations == null)
 			return;
 
+		people.clear();
+
 		try {
 			JSONArray array = locations.getJSONArray(Consts.LOCATIONS_FIELD);
-			/*
-			 * We could use a hashmap/SimplerAdapater but I don't see any point
-			 * yet. Make a string array for the ListView.
-			 */
-			people = new String[array.length()];
 
 			for (int i = 0; i < array.length(); i++) {
 				MarkerOptions marker;
 				LatLng latLng;
-				String name,date,dateDiff;
+				String name,date,dateDiff, prettyName;
 				SimpleDateFormat dateFormat;
 				JSONObject locationEntry = array.getJSONObject(i);
 
@@ -309,9 +288,9 @@ public class MainActivity extends FragmentActivity {
 				 * Copy user names into a standard string array for drawer list
 				 * also make names with capitals
 				 */
-				people[i] = name.substring(0, 1).toUpperCase(
-						Locale.getDefault())
-						+ name.substring(1);
+				prettyName = name.substring(0, 1).toUpperCase(
+								Locale.getDefault())
+								+ name.substring(1);
 				/* if user is me don't add it from the server source */
 				if (name.equals(user))
 					continue;
@@ -330,26 +309,23 @@ public class MainActivity extends FragmentActivity {
 					dateDiff = date;
 				}
 
-
 				if (!locationEntry.getString(Consts.LOCATION_FIELD).contains(
 						","))
 					continue;
 
 				latLng = latLngFromString(locationEntry.getString(Consts.LOCATION_FIELD));
 
+				mDrawerListAdapter.add(new Person (prettyName, latLng, dateDiff));
+
 				marker = new MarkerOptions()
 						.position(latLng)
-						.title(people[i])
+						.title(prettyName)
 						.snippet(dateDiff)
 						.icon(BitmapDescriptorFactory
 						.defaultMarker(markerColours[i % 10]));
 
 				mMap.addMarker(marker);
 			}
-
-			mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-					R.layout.drawer_list_item, people));
-
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
