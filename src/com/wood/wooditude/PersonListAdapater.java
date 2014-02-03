@@ -27,14 +27,6 @@ public class PersonListAdapater extends ArrayAdapter<Person> {
 		TextView name =(TextView)row.findViewById(R.id.draweritem_name);
 		TextView lastCheckin = (TextView)row.findViewById(R.id.draweritem_lastcheckin);
 
-		name.setLongClickable(false);
-		name.setClickable(false);
-		name.setOnClickListener(null);
-		
-		lastCheckin.setLongClickable(false);
-		lastCheckin.setClickable(false);
-		lastCheckin.setOnClickListener(null);
-		
 		if (people.size() > position) {
 			Person mPerson = people.get(position);
 			name.setText(mPerson.getName());
