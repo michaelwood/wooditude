@@ -27,4 +27,13 @@
         <item >3840000</item>
         <item >3000</item>
     </string-array>
+    <string name="add_geofence">Add Geofences</string>
+    <string name="geofence_add_done_label">Done</string>
+    <string name="gefoence_done">Done</string>
+    <string name="add_geofence_cancel_label">Cancel</string>
+    <string name="clear_geofences">Clear Geofences</string>
+    <string name="geofence_name">Geofence name</string>
+    <string name="location_reporting">Location reporting</string>
+    <string name="personal_geofence">Personal geofence</string>
+    <string name="misc_pref">Misc</string>
 </resources>

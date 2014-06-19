@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/settings" android:title="@string/settings_label"></item>
+    <item android:id="@+id/add_geofence" android:title="@string/add_geofence"></item><item android:id="@+id/clear_geofences" android:title="@string/clear_geofences"></item><item android:id="@+id/settings" android:title="@string/settings_label"></item>
     <item android:id="@+id/about" android:title="@string/about_label"></item>
+    
+    
 </menu>

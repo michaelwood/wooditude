@@ -12,4 +12,9 @@
         <ListPreference android:entries="@array/syncintervals_labels" android:entryValues="@array/syncinterval_values" android:title="@string/syncfrequency_label" android:key="syncinterval"/>
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/misc_pref">
+		<SwitchPreference android:title="@string/location_reporting" android:key="locationreporting" android:defaultValue="true"/>
+		<SwitchPreference android:title="@string/personal_geofence" android:key="personalgeofence" android:defaultValue="false"/>
+    </PreferenceCategory>
+
 </PreferenceScreen>

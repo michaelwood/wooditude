@@ -156,6 +156,7 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 			request.setRequestMethod("POST");
 			OutputStreamWriter post = new OutputStreamWriter(
 					request.getOutputStream());
+			Consts.log("Sending "+input);
 			post.write(input);
 			post.flush();
 
@@ -169,6 +170,7 @@ class HttpTransfer extends AsyncTask<String, String, Void> {
 			post.close();
 			in.close();
 			try {
+				Consts.log(output);
 				((LocationSync) appContext)
 						.httpTransferFinished(new JSONObject(output));
 			} catch (JSONException e) {
