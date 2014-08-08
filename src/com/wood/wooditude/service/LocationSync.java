@@ -252,12 +252,13 @@ public class LocationSync extends IntentService implements
 	}
 
 	public void httpTransferFinished(JSONObject locationResults) {
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		locations = locationResults;
 		Consts.log("httpTransferFinished broadcasting...");
 		LocalBroadcastManager.getInstance(this).sendBroadcast(
 				new Intent(Consts.NOTIFICATION));
-		
-		if (!geofences.isEmpty()) {
+
+		if (!geofences.isEmpty() || preferences.getBoolean(Consts.PREF_PERSONAL_GEOFENCE, false) == true) {
 			maybeGeofenceEntered (locations);
 		}
 	}
